@@ -1,0 +1,281 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	  
+	<meta name="description" content="Proyecto de Sistemas Gráficos Interactivo">
+	<meta name="keywords" content="Gráficos 3D, Webgl">
+	<meta name="author" content="Carlos Jordán, Juan De los Reyes">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet" />
+	<link href="bootstrap-colorpicker/css/bootstrap-colorpicker.css" rel="stylesheet" />
+	<script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
+	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" src="bootstrap-colorpicker/js/bootstrap-colorpicker.js"></script>
+    <script src="dist/js/bootstrap.min.js"></script>
+
+    <script id="shader-fs" type="x-shader/x-fragment">
+        precision mediump float;
+
+        varying vec4 vColor;
+
+        uniform int fragDirection;
+
+        // funció booleana per saber si activem opcional de vertex shader
+        uniform int vertexColor2;
+
+        void main(void) {
+            if(vertexColor2 == 0) {
+                if(fragDirection == 0) { // si no s'especifiquen paràmetres de franges
+                    gl_FragColor = vColor;
+            }
+            else {
+                    if(fragDirection == 1) { // si les franges són verticals
+                        if(mod(gl_FragCoord.x, 10.0) > 5.0) {
+                            discard;
+                        }
+                        else {
+                            gl_FragColor = vColor;
+                        }
+                    }
+                    else { // si les franges són horitzontals
+                        if(mod(gl_FragCoord.y, 10.0) > 5.0) {
+                            discard;
+                        }
+                        else {
+                            gl_FragColor = vColor;
+                        }
+                    }  
+                }
+            }
+            else {
+                vec4 color = vec4(vColor.r*(gl_FragCoord.y/450.0), vColor.g*(gl_FragCoord.y/450.0), vColor.b*(gl_FragCoord.y/450.0), 1.0);
+                if(fragDirection == 0) { // si no s'especifiquen paràmetres de franges
+                    gl_FragColor = color;
+            }
+            else {
+                    if(fragDirection == 1) { // si les franges són verticals
+                        if(mod(gl_FragCoord.x, 10.0) > 5.0) {
+                            discard;
+                        }
+                        else {
+                            gl_FragColor = color;
+                        }
+                    }
+                    else { // si les franges són horitzontals
+                        if(mod(gl_FragCoord.y, 10.0) > 5.0) {
+                            discard;
+                        }
+                        else {
+                            gl_FragColor = color;
+                        }
+                    }  
+                }
+                
+            }
+        }        
+    </script>
+
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        attribute vec4 aVertexColor;
+
+        uniform vec3 vertexColorVec;
+
+        uniform mat4 uMVMatrix;
+        uniform mat4 uPMatrix;
+
+        varying vec4 vColor;
+
+        // funció booleana per saber si activem opcional de vertex shader
+        uniform int vertexColor;
+
+        void main(void) {
+            gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+            if(vertexColor == 0) {
+                vColor = aVertexColor;
+            }
+            else {
+                vColor = vec4(vertexColorVec, 1);
+            }
+        }
+    </script>
+	<script type="text/javascript" src="js/init.js"></script>
+	<script type="text/javascript" src="js/funciones.js"></script>
+	<script type="text/javascript" src="js/drag_drop.js"></script>
+
+	<script type="text/javascript" src="js/acciones.js"></script>
+	<script type="text/javascript" src="js/escalas.js"></script>
+    <script type="text/javascript">
+        var mvMatrixStack = []; // Guardar la posición original 
+        var mvMatrix = mat4.create();
+        var pMatrix = mat4.create();
+        document.onkeydown = handleKeyDown;
+	</script>
+
+    <link rel="icon" href="favicon.ico">
+
+    <title>Practica de SGI</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="dist/css/bootstrap.min.css" rel="stylesheet">
+
+  </head>
+
+	<body onload="webGLStart();">
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Project name</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="#">Separated link</a></li>
+                <li><a href="#">One more separated link</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <!-- Begin page content -->
+    <div class="container">
+      	<div class="page-header">
+        	<h3>Práctica No. 1</h3>
+      	</div>
+		  
+		<div class="row">
+			<div class="col-sm-3">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<h4>Panel</h4>
+						<div class="sub2">
+							<h5>Cámara</h5>
+							<hr/>
+							<input type="radio" name="cameraSelector" onclick="changeCamera(false);" checked> Perspectiva<br>
+							<input type="radio" name="cameraSelector" onclick="changeCamera(true);"> Axonométrica<br>
+						</div>
+						<div class="sub2">
+							<h5>Zoom</h5>
+							<hr/>
+							<input type="range" id="rangeSelector" min="1" max="100" step="1" value="90" oninput="updateCameraValue(this.value)">
+							<div id="cameraValue"></div>
+						</div>
+						<div class="sub2">
+							<h5>Drag and Drop</h5>
+							<hr/>
+							<img id="drag1" src="img/prism.png" alt="Prisma" draggable="true" ondragstart="drag(event)">
+							Arrastrar<br>
+						</div>
+						<div class="sub2">
+							<h5>Pintado por fragmento</h5>
+							<hr/>
+							<img src="img/frag_vertical.png" alt="Vertical" onclick="setFragmentUniform(1)">
+							<img src="img/frag_horizontal.png" alt="Horizontal" onclick="setFragmentUniform(2)">
+							<input class="btn btn-primary" type="button" name="reset" value="Restablecer" onclick="setFragmentUniform(0)">
+						</div>
+						<div class="sub2">
+							<h5>Pintado por vértice </h5>
+							<hr/>
+							<label class="switch">
+								<input type="checkbox" onchange="setVertexUniform()">
+								<div class="slider round"></div>
+							</label>
+							<input id="colorPicker" type="color" onchange="changeColorPicker(colorPicker.value)" /> 
+							<a href="#" class="btn btn-default" id="cp4">Change background color</a>
+							<script>
+								$(function() {
+									$('#cp4').colorpicker().on('changeColor', function(e) {
+										$('body')[0].style.backgroundColor = e.color.toString(
+											'rgba');
+									});
+								});
+							</script>
+						</div>
+					</div>
+					</div>
+				</div>
+				
+		
+			<div class="col-sm-9">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<canvas id="canvas_pr1" width="824" height="404" ondrop="drop(event)" ondragover="allowDrop(event)"></canvas>
+					</div>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<div class="row">
+							<h4 class="col-sm-12">Controlador de Objectos</h4>
+						</div>	
+						<hr/>
+						<div class="row">
+							<div class="col-sm-6">
+									<div class="form-group">
+										<input type="radio" id="pyramidCheck" name="object" checked="checked" /> 
+										<label for="pyramidCheck">Pirámide</label>	
+									</div>
+								
+									<div class="form-group">
+										<input type="radio" id="cubeCheck" name="object" /> 
+										<label for="cubeCheck">Cubo</label>	
+									</div>
+								
+									<div class="form-group">
+										<input type="radio" id="prismCheck" name="object" /> 
+										<label for="prismCheck">Prisma</label>	
+									</div>
+													
+							</div>
+							<div class="col-sm-6">
+								<input type="radio" id="rotationCheck" name="objectAction" checked="checked"> Rotación<br>
+								<input type="radio" id="translationCheck" name="objectAction"> Translación<br>
+								<input type="radio" id="scalationCheck" name="objectAction"> Escalado
+							</div>
+						</div>
+					</div>
+				</div>
+
+				
+				<audio controls >
+				<source src="music.mp3" type="audio/mpeg">
+					Your browser does not support the audio element.
+				</audio>
+			</div>
+		</div>
+	</div>
+
+    <footer class="footer">
+      <div class="container">
+        <p class="text-muted">Primer Parcial, Gráficos con WebGL</p>
+      </div>
+    </footer>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+  </body>
+</html>
