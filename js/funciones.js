@@ -4,6 +4,10 @@
  */
 
 
+    function degToRad(degrees) {
+        return degrees * Math.PI / 180;
+    }
+
 function webGLStart() {
     var canvas = document.getElementById("canvas_pr1");
     initGL(canvas);

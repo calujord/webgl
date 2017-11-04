@@ -8,14 +8,14 @@
 	<meta name="author" content="Carlos Jordán, Juan De los Reyes">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
-	<link href="css/style.css" rel="stylesheet" />
+	
 	<link href="bootstrap-colorpicker/css/bootstrap-colorpicker.css" rel="stylesheet" />
 	<script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
 	
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script type="text/javascript" src="bootstrap-colorpicker/js/bootstrap-colorpicker.js"></script>
     <script src="dist/js/bootstrap.min.js"></script>
-
+    <link href="css/style.css" rel="stylesheet" />
     <script id="shader-fs" type="x-shader/x-fragment">
         precision mediump float;
 
@@ -113,9 +113,14 @@
         var mvMatrix = mat4.create();
         var pMatrix = mat4.create();
         document.onkeydown = handleKeyDown;
-	</script>
+        videoElement = document.getElementById("video");
+        
+        function startVideo() {
+            videoElement.play();
+            intervalID = setInterval(drawScene, 15);
+        }
 
-    <link rel="icon" href="favicon.ico">
+	</script>
 
     <title>Practica de SGI</title>
 
@@ -136,24 +141,12 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Project name</a>
+          <a class="navbar-brand" href="#">Proyecto de SGI 2017</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li class="active"><a href="#">Home</a></li>
             <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li><a href="#">Action</a></li>
-                <li><a href="#">Another action</a></li>
-                <li><a href="#">Something else here</a></li>
-                <li role="separator" class="divider"></li>
-                <li class="dropdown-header">Nav header</li>
-                <li><a href="#">Separated link</a></li>
-                <li><a href="#">One more separated link</a></li>
-              </ul>
             </li>
           </ul>
         </div><!--/.nav-collapse -->
@@ -161,108 +154,125 @@
     </nav>
 
     <!-- Begin page content -->
-    <div class="container">
-      	<div class="page-header">
-        	<h3>Práctica No. 1</h3>
-      	</div>
-		  
+    <div class="container" id="container">
 		<div class="row">
 			<div class="col-sm-3">
-				<div class="panel panel-default">
-					<div class="panel-body">
-						<h4>Panel</h4>
-						<div class="sub2">
-							<h5>Cámara</h5>
-							<hr/>
-							<input type="radio" name="cameraSelector" onclick="changeCamera(false);" checked> Perspectiva<br>
-							<input type="radio" name="cameraSelector" onclick="changeCamera(true);"> Axonométrica<br>
-						</div>
-						<div class="sub2">
-							<h5>Zoom</h5>
-							<hr/>
-							<input type="range" id="rangeSelector" min="1" max="100" step="1" value="90" oninput="updateCameraValue(this.value)">
-							<div id="cameraValue"></div>
-						</div>
-						<div class="sub2">
-							<h5>Drag and Drop</h5>
-							<hr/>
-							<img id="drag1" src="img/prism.png" alt="Prisma" draggable="true" ondragstart="drag(event)">
-							Arrastrar<br>
-						</div>
-						<div class="sub2">
-							<h5>Pintado por fragmento</h5>
-							<hr/>
-							<img src="img/frag_vertical.png" alt="Vertical" onclick="setFragmentUniform(1)">
-							<img src="img/frag_horizontal.png" alt="Horizontal" onclick="setFragmentUniform(2)">
-							<input class="btn btn-primary" type="button" name="reset" value="Restablecer" onclick="setFragmentUniform(0)">
-						</div>
-						<div class="sub2">
-							<h5>Pintado por vértice </h5>
-							<hr/>
-							<label class="switch">
-								<input type="checkbox" onchange="setVertexUniform()">
-								<div class="slider round"></div>
-							</label>
-							<input id="colorPicker" type="color" onchange="changeColorPicker(colorPicker.value)" /> 
-							<a href="#" class="btn btn-default" id="cp4">Change background color</a>
-							<script>
-								$(function() {
-									$('#cp4').colorpicker().on('changeColor', function(e) {
-										$('body')[0].style.backgroundColor = e.color.toString(
-											'rgba');
-									});
-								});
-							</script>
-						</div>
-					</div>
-					</div>
-				</div>
-				
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <h5>Tipo de Cámara</h5>
+                        <hr/>
+                        <input type="radio" name="cameraSelector" onclick="changeCamera(false);" checked> Perspectiva<br>
+                        <input type="radio" name="cameraSelector" onclick="changeCamera(true);"> Axonométrica<br>
+                        <h5>Zoom</h5>
+                        <hr/>
+                        <input type="range" id="rangeSelector" min="1" max="100" step="1" value="90" oninput="updateCameraValue(this.value)">
+                        <div id="cameraValue"></div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <h5>Drag and Drop</h5>
+                        <hr/>
+                        <img id="drag1" src="img/esfera.png" alt="Esfera" width="30px" draggable="true" ondragstart="drag(event)">
+                        Arrastrar<br>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+
+                        <div class="sub2">
+                            <h5>Pintado por fragmento</h5>
+                            <hr/>
+                            <img src="img/frag_vertical.png" alt="Vertical" onclick="setFragmentUniform(1)">
+                            <img src="img/frag_horizontal.png" alt="Horizontal" onclick="setFragmentUniform(2)">
+                            <input class="btn btn-primary" type="button" name="reset" value="Restablecer" onclick="setFragmentUniform(0)">
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
 		
 			<div class="col-sm-9">
 				<div class="panel panel-default">
 					<div class="panel-body">
 						<canvas id="canvas_pr1" width="824" height="404" ondrop="drop(event)" ondragover="allowDrop(event)"></canvas>
 					</div>
-				</div>
-				<div class="panel panel-default">
-					<div class="panel-body">
-						<div class="row">
-							<h4 class="col-sm-12">Controlador de Objectos</h4>
-						</div>	
-						<hr/>
-						<div class="row">
-							<div class="col-sm-6">
-									<div class="form-group">
-										<input type="radio" id="pyramidCheck" name="object" checked="checked" /> 
-										<label for="pyramidCheck">Pirámide</label>	
-									</div>
-								
-									<div class="form-group">
-										<input type="radio" id="cubeCheck" name="object" /> 
-										<label for="cubeCheck">Cubo</label>	
-									</div>
-								
-									<div class="form-group">
-										<input type="radio" id="prismCheck" name="object" /> 
-										<label for="prismCheck">Prisma</label>	
-									</div>
-													
-							</div>
-							<div class="col-sm-6">
-								<input type="radio" id="rotationCheck" name="objectAction" checked="checked"> Rotación<br>
-								<input type="radio" id="translationCheck" name="objectAction"> Translación<br>
-								<input type="radio" id="scalationCheck" name="objectAction"> Escalado
-							</div>
-						</div>
-					</div>
-				</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
 
+                        <div class="panel panel-default">
+                            <div class="panel-body" style="height: 175px;">
+                                <div class="sub2">
+                                    <h5>Pintado por vértice </h5>
+                                    <hr/>
+                                    <label class="switch">
+                                        <input type="checkbox" id="color_selection" onchange="changeColorCheck($('#color_selection'))">
+                                        <div class="slider round"></div>
+                                    </label>
+                                    <a href="#" class="btn btn-default" id="cp4">Change background color</a>
+                                    <script>
+                                        $(function() {
+                                            $('#cp4').colorpicker().on('changeColor', function(e) {
+                                                changeColorPicker(e.color.toString('rgba'));
+                                                $("#color_selection").attr("checked", true);
+                                                changeColorCheck($("#color_selection"));
+                                                // setVertexUniform();
+                                            });
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <h5>Controlador de Objectos</h4>
+                                <hr/>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                            <div class="form-group">
+                                                <input type="radio" id="pyramidCheck" name="object" /> 
+                                                <label for="pyramidCheck">Pirámide</label>	
+                                            </div>
+                                        
+                                            <div class="form-group">
+                                                <input type="radio" id="cubeCheck" name="object" checked="checked" /> 
+                                                <label for="cubeCheck">Cubo</label>	
+                                            </div>
+                                        
+                                            <div class="form-group">
+                                                <input type="radio" id="prismCheck" name="object" /> 
+                                                <label for="prismCheck">Esfera</label>	
+                                            </div>
+                                                            
+                                    </div>
+                                    <div class="col-sm-6">
+        
+                                        <div class="form-group">
+                                            <input type="radio" id="rotationCheck" name="objectAction"> 
+                                            <label for="rotationCheck">Rotación</label>	
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="radio" id="translationCheck" name="objectAction"> 
+                                            <label for="translationCheck">Translación</label>	
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="radio" id="scalationCheck" name="objectAction" checked="checked"> 
+                                            <label for="scalationCheck">Escalado</label>	
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 				
-				<audio controls >
-				<source src="music.mp3" type="audio/mpeg">
-					Your browser does not support the audio element.
-				</audio>
+
+				<video id="video">
+                    Parece ser que tu navegador no soporta el elemento HTML5. <code>&lt;video&gt;</code>
+                </video>
 			</div>
 		</div>
 	</div>

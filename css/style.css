@@ -47,3 +47,10 @@ html {
   .form-group {
     margin-bottom: 2px;
 }
+.form-group {
+  margin-bottom: 0px !important;
+}
+#container {
+  margin-bottom: 80px;
+  margin-top: 10px;
+}

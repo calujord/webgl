@@ -87,11 +87,6 @@ function initShaders() {
     function initBuffers() {
         triangleVertexPositionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-        /*var vertices = [
-             -1.0,  1.0,  0.0,
-            -1.0, -1.0,  0.0,
-             0.0, -1.0,  0.0
-        ];*/
         var vertices = [
              -0.4,  0.2,  0.0,
               0.0,  0.8,  0.0,
@@ -103,13 +98,6 @@ function initShaders() {
 
         squareVertexPositionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
-        // vertices = [
-        //      0.0,  1.0,  0.0,
-        //     0.0,  -1.0,  0.0,
-        //      1.0, 1.0,  0.0,
-        //     1.0, -1.0,  0.0
-        // ];
-
         vertices = [
              0.2,  0.0,  0.0,
              0.2, -0.4,  0.0,

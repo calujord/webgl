@@ -15,7 +15,7 @@ function mvPopMatrix() {
 function setMatrixUniforms() {
     gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
     gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
-    gl.uniform3f(shaderProgram.vertexColorVecUniform, vertexColorMatrix[0]/255, vertexColorMatrix[1]/255, vertexColorMatrix[2]/255);
+    gl.uniform3f(shaderProgram.vertexColorVecUniform, vertexColorMatrix[1]/255, vertexColorMatrix[1]/255, vertexColorMatrix[2]/255);
 }
 
 function setIntUniform() {
@@ -65,34 +65,34 @@ function initBuffers() {
     gl.bindBuffer(gl.ARRAY_BUFFER, pyramidVertexColorBuffer);
     var colors = [
     // Front face
-    0.37, 0.74, 0.70, 1.0,
-    0.37, 0.74, 0.70, 1.0,
-    0.37, 0.74, 0.70, 1.0,
+    0, 0.74, 0.70, 1.0,
+    0, 0.74, 0.70, 1.0,
+    0, 0.74, 0.70, 1.0,
 
     // Right face
-    0.89, 0.49, 0.37, 1.0,
-    0.89, 0.49, 0.37, 1.0,
-    0.89, 0.49, 0.37, 1.0,
+    1, 1, 1, 1.0,
+    1, 1, 1, 1.0,
+    1, 1, 1, 1.0,
 
     // Back face
-    0.88, 0.18, 0.25, 1.0,
-    0.88, 0.18, 0.25, 1.0,
-    0.88, 0.18, 0.25, 1.0,
+    1, 0, 0, 1.0,
+    1, 0, 0, 1.0,
+    1, 0, 0, 1.0,
 
     // Left face
-    0.08, 0.17, 0.23, 1.0,
-    0.08, 0.17, 0.23, 1.0,
-    0.08, 0.17, 0.23, 1.0,
+    1, 0, 1, 1.0,
+    1, 0, 1, 1.0,
+    1, 0, 1, 1.0,
 
     // Bottom face 1
-    0.94, 0.87, 0.67, 1.0,
-    0.94, 0.87, 0.67, 1.0,
-    0.94, 0.87, 0.67, 1.0,
+    1, 1, 0, 1.0,
+    1, 1, 0, 1.0,
+    1, 1, 0, 1.0,
 
     // Bottom face 2
-    0.94, 0.87, 0.67, 1.0,
-    0.94, 0.87, 0.67, 1.0,
-    0.94, 0.87, 0.67, 1.0
+    1, 1, 0, 1.0,
+    1, 1, 0, 1.0,
+    1, 1, 0, 1.0
     ];
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
@@ -270,35 +270,118 @@ function initBuffers() {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
     prismVertexColorBuffer.itemSize = 4;
     prismVertexColorBuffer.numItems = 24;
+
+    var latitudeBands = 60; //lineas paralelas al ecuador
+    var longitudeBands = 60;////divide esfera en segmentos
+    var radius = 2;
+//vertices 
+    var vertexPositionData = [];
+    var normalData = [];
+    var textureCoordData = [];
+    for (var latNumber=0; latNumber <= latitudeBands; latNumber++) {
+        var theta = latNumber * Math.PI / latitudeBands;
+        var sinTheta = Math.sin(theta);
+        var cosTheta = Math.cos(theta);
+
+        for (var longNumber=0; longNumber <= longitudeBands; longNumber++) {
+            var phi = longNumber * 2 * Math.PI / longitudeBands;
+            var sinPhi = Math.sin(phi);
+            var cosPhi = Math.cos(phi);
+
+            var x = cosPhi * sinTheta;
+            var y = cosTheta;
+            var z = sinPhi * sinTheta;
+            var u = 1 - (longNumber / longitudeBands);
+            var v = 1 - (latNumber / latitudeBands);
+
+            normalData.push(x);
+            normalData.push(y);
+            normalData.push(z);
+            textureCoordData.push(u);
+            textureCoordData.push(v);
+            vertexPositionData.push(radius * x);
+            vertexPositionData.push(radius * y);
+            vertexPositionData.push(radius * z);
+        }
+    }
+//union de los vertices
+    var indexData = [];
+    for (var latNumber=0; latNumber < latitudeBands; latNumber++) {
+        for (var longNumber=0; longNumber < longitudeBands; longNumber++) {
+            var first = (latNumber * (longitudeBands + 1)) + longNumber;
+            var second = first + longitudeBands + 1;
+            indexData.push(first);
+            indexData.push(second);
+            indexData.push(first + 1);
+
+            indexData.push(second);
+            indexData.push(second + 1);
+            indexData.push(first + 1);
+        }
+    }
+
+    moonVertexNormalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexNormalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
+    moonVertexNormalBuffer.itemSize = 3;
+    moonVertexNormalBuffer.numItems = normalData.length / 3;
+
+    moonVertexColorBuffer=gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER,moonVertexColorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
+    moonVertexColorBuffer.itemSize = 2;
+    moonVertexColorBuffer.numItems = textureCoordData.length / 4;
+    
+    
+    
+    moonVertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexPositionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositionData), gl.STATIC_DRAW);
+    moonVertexPositionBuffer.itemSize = 3;
+    moonVertexPositionBuffer.numItems = vertexPositionData.length / 3;
+
+    moonVertexIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, moonVertexIndexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
+    moonVertexIndexBuffer.itemSize = 1;
+    moonVertexIndexBuffer.numItems = indexData.length;
+
+
+
 }
+var rEsfera	= 0;
+
 
 
 function drawScene() {
-    // declarem càmera perspectiva amb paràmetres i incialitzem viewport
+    // declaracion de camara
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    gl.enable(gl.DEPTH_TEST);           // Enable depth testing
+    gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
+
     mat4.identity(mvMatrix);
 
-    // tractament si càmera perspectiva
+    // camara perpectiva
     if(!orthogonal) {
         if(cameraSelectorValue < 0) {
             cameraSelectorValue = 90;
         }
-        mat4.perspective(cameraSelectorValue, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix); 
-        document.getElementById("cameraValue").innerHTML = cameraSelectorValue +'º';
+        mat4.perspective(cameraSelectorValue, gl.viewportWidth / gl.viewportHeight, 1, 100.0, pMatrix); 
+        document.getElementById("cameraValue").innerHTML = cameraSelectorValue +' Grados';
     }
-    // tractament si càmera ortogonal o axonomètrica
+    // cámara axonométrica
     else {
         mat4.ortho(-cameraSelectorValue*0.15/2, cameraSelectorValue*0.15/2, -cameraSelectorValue*0.15/2, cameraSelectorValue*0.15/2, 0.1, 100, pMatrix);
         document.getElementById("cameraValue").innerHTML = "Viewport/2 = " + (cameraSelectorValue*0.15/2).toFixed(1);;
     }
 
-    // comencem a dibuixar
+    // comienza a dibjjar
     mat4.translate(mvMatrix, [0.0, 0.0, -7.0]);
     mat4.translate(mvMatrix, [despXPyramid, despYPyramid, despZPyramid]);
 
-    // dibuixem piràmide
+    // pinta piramide
     mvPushMatrix();
 
     mat4.rotate(mvMatrix, -rotXPyramid, [1, 0, 0]);
@@ -348,36 +431,39 @@ function drawScene() {
 
     // dibuixem prisme triangular
     if(drawPrism) {
-        if(firstPrism) {
-            despXPrism = prismX/30;
-            despYPrism = prismY/30;
-        }
-        mat4.translate(mvMatrix, [despXPrism, despYPrism, despZPrism]);
 
-        mvPushMatrix();
+
+        console.log(despXPrism, despYPrism, despZPrism);
+        mat4.scale(mvMatrix, scalePrism);
+        mat4.translate(mvMatrix, [despXPrism, despYPrism, despZPrism]);
         
         mat4.rotate(mvMatrix, -rotXPrism, [1, 0, 0]);
         mat4.rotate(mvMatrix, rotYPrism, [0, 1, 0]);
 
-        mat4.scale(mvMatrix, scalePrism);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, prismVertexPositionBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, prismVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, prismVertexColorBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, prismVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
+        // mat4.translate(mvMatrix, [-despXPrism, -despYPrism, -despZPrism]);
+        
+        
+        gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexColorBuffer);
+        gl.vertexAttribPointer(shaderProgram.vertexColorAttribute,moonVertexColorBuffer.itemSize,gl.FLOAT,false,0,0);
+    
+        //buffer con posiciones de los vertices de la esfera
+        gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexPositionBuffer);
+        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, moonVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        //buffer de los indices q definiran q vertice hay q dibujar para formar una cara
+        gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexNormalBuffer);
+        gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, moonVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
+        //pintamos esfera usando triangulos
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, moonVertexIndexBuffer);
         setMatrixUniforms();
-        setIntUniform();
-
-        gl.drawArrays(gl.TRIANGLES, 0, prismVertexPositionBuffer.numItems);
-
-        mvPopMatrix();
-        // reestablim matriu de projecció
-        mat4.translate(mvMatrix, [-despXPrism, -despYPrism, -despZPrism]);
+        gl.drawElements(gl.TRIANGLES, moonVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+        // mvPopMatrix();
 
         firstPrism = false;
     }
+
+    
 }
 
 function calculateDesp(x, y, canvas) {
@@ -489,10 +575,19 @@ function setFragmentUniform(value) {
 }
 
 function setVertexUniform() {
-    (vertexColoring == 0) ? vertexColoring = 1 : vertexColoring = 0;
-    drawScene();
 }
 
+function changeColorCheck(input){
+    
+    if(input.is(':checked')){
+        vertexColoring = 1;
+    }
+    else{
+        vertexColoring = 0;
+    }
+    drawScene();
+
+}
 function changeColorPicker(color) {
     var red = parseInt(color.substring(1,3), 16);
     var green = parseInt(color.substring(3,5), 16);

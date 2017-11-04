@@ -15,7 +15,7 @@ const KEY_DOWN = 40;
 
 
 const ROT_CONST = 0.1; // Constante de rotación 
-const TRANS_CONST = 0.15; // Constante de traslación 
+const TRANS_CONST = 0.13; // Constante de traslación 
 const SCALE_CONST = 0.025; // Constante de escala
 const INC_SCALE = 0.01; // Constante de escala
 const DESP_CONST = 0.05; 
